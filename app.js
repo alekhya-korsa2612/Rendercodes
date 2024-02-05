@@ -35,17 +35,17 @@ app.use(function (req, res, next) {
 // db.once('open', () => {
 //     console.log('Connected to MongoDB');
 // });
-const uri = 'mongodb+srv://alekhya:ftz6oftF9wFuoVsw@cluster0.cd8hews.mongodb.net/?retryWrites=true&w=majority';
+const uri='mongodb+srv://korsaalekhya516:1pwkX4x6xMVZhWX9@cluster0.uz8kz1t.mongodb.net/?retryWrites=true&w=majority';
+
 mongoose.connect(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  
   });
 const db = mongoose.connection;
 db.on('error', (error) => {
   console.error('Error connecting to MongoDB Atlas with Mongoose:', error);
 });
 db.once('open', () => {
-  console.log('Connected to MongoDB Atlas with Mongoose');
+  console.log('Connected to MongoDB Atlas with Mongoose');
 });
 
 app.use(express.json()); 
@@ -96,9 +96,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(fileUpload({ createParentPath: true }));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+
 
 // Handle JSON payload
 app.post('/json-payload', (req, res) => {
