@@ -1,37 +1,35 @@
-const router= require('express').Router();
+const router = require('express').Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
-const jwt=require('jsonwebtoken');
-const checkAuth=require('../middleware/check-auth')
-
-router.post('/register',(req,res)=>{
-    bcrypt.hash(req.body.password ,10,(err,hash)=> {
-        if(err){
-            return res.json({success:false, message:"hash error"})
-        }else{
-            const user = new User({
-                name:req.body.name,
-                email:req.body.email,
-                mobile:req.body.mobile,
-                password:hash,
-                companyname:req.body.companyname,
-            })
-            user.save()
-            .then(()=>{
-             res.json({success:true,message:'ACCOUNT CREATED SUCCESSFULLY'})
-            })
-            .catch((err)=>{
-                if(err.code === 11000){
-                    return res.json({success:false,message:'Email Already existed'})
-                }
-                res.json({success:false,message:'Authentication failed'})
-               })
+const jwt = require('jsonwebtoken');
+const checkAuth = require('../middleware/check-auth');
+ 
+router.post('/register', async (req, res) => {
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+ 
+        const user = new User({
+            name: req.body.name,
+            email: req.body.email,
+            mobile: req.body.mobile,
+            password: hashedPassword,
+            companyname: req.body.companyname,
+        });
+ 
+        await user.save();
+        res.json({ success: true, message: 'ACCOUNT CREATED SUCCESSFULLY' });
+    } catch (err) {
+        if (err.code === 11000) {
+            return res.json({ success: false, message: 'Email Already Exists' });
         }
-    });
-    
+        console.error(err);
+        res.json({ success: false, message: 'Authentication failed' });
+    }
 });
+ 
+ 
 router.post('/login',(req,res)=>{
-    
+   
     User.find({email:req.body.email}).exec().then((result)=>{
         if(result.length<1){
          return res.json({success:false,message:'User not found'})
@@ -53,18 +51,12 @@ router.post('/login',(req,res)=>{
         res.json({success:false,message:'Authentication failed'})
     })
 });
-// router.get('/profile',checkAuth,(req,res)=>{
-//     const userId=req.userData.userId;
-//     User.findById(userId).exec().then((result)=>{
-//         res.json({success:true,data:result})
-//     }).catch((err)=>{
-//         res.json({success:false,message:"server error"})
-//     })
-// });
-router.get('/profile', checkAuth, (req, res) => {
-    const userId = req.userData.userId;
-
-    User.findById(userId).exec()
+ 
+router.get('/profile/:userId', checkAuth, (req, res) => {
+    const userId = req.params.userId;
+ 
+    User.findById(userId)
+        .exec()
         .then((result) => {
             if (result) {
                 res.json({ success: true, data: result });
@@ -77,18 +69,37 @@ router.get('/profile', checkAuth, (req, res) => {
             res.status(500).json({ success: false, message: "Server error" });
         });
 });
-
-
-
-
-router.get('/succes', async (req, res, next) => {
+ 
+router.get('/success', async (req, res) => {
     try {
-        const user = await User.find({});
-        res.status(200).json({ data: user, message: 'Authentication login successfully' });
+        const users = await User.find({});
+        res.status(200).json({ success: true, data: users, message: 'Authentication login successfully' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
+router.get("/api/getByuserid/:userId", async (req, res) => {
+    const userId = req.params.userId;
  
-module.exports =router;
+    try {
+        const data = await User.findById(userId).exec();
+        res.json({ success: true, data });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+// router.get("/api/getByuserid",(req,res)=>{
+//     const userId = req.params.userId;
+//     User.findOne(userId,(err,data)=>{
+//         if (err){
+//             console.log(err);
+//         }
+//         else{
+//             res.send(data)
+//         }
+//     })
+ 
+// })
+module.exports = router;
