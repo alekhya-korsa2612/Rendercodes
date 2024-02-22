@@ -64,7 +64,7 @@ app.post('/sendotp',(req,res)=>{
     client.messages.create({
         body:`hello hi nikhila ${otp}`,
         to:'+919963760431',
-        from:'+19203546973'
+        from:'+13202454091'
     })
     .then((message)=>{
         console.log('message sent:', message.sid);
