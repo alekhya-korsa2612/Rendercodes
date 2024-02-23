@@ -3,11 +3,11 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const checkAuth = require('../middleware/check-auth');
- 
+
 router.post('/register', async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
- 
+
         const user = new User({
             name: req.body.name,
             email: req.body.email,
@@ -15,7 +15,7 @@ router.post('/register', async (req, res) => {
             password: hashedPassword,
             companyname: req.body.companyname,
         });
- 
+
         await user.save();
         res.json({ success: true, message: 'ACCOUNT CREATED SUCCESSFULLY' });
     } catch (err) {
@@ -26,10 +26,10 @@ router.post('/register', async (req, res) => {
         res.json({ success: false, message: 'Authentication failed' });
     }
 });
- 
- 
+
+
 router.post('/login',(req,res)=>{
-   
+    
     User.find({email:req.body.email}).exec().then((result)=>{
         if(result.length<1){
          return res.json({success:false,message:'User not found'})
@@ -51,25 +51,32 @@ router.post('/login',(req,res)=>{
         res.json({success:false,message:'Authentication failed'})
     })
 });
+
+router.get('/profile', checkAuth, (req, res) => {
+    const userId=req.userData.userId;
+    User.findById(userId).exec().then((result)=>{
+        res.json({success:true,data:result})
+}).then((err)=>{
+    res.json({success:false,message:"server error"})
+})
+
+    // const userId = req.params.userId;
  
-router.get('/profile/:userId', checkAuth, (req, res) => {
-    const userId = req.params.userId;
- 
-    User.findById(userId)
-        .exec()
-        .then((result) => {
-            if (result) {
-                res.json({ success: true, data: result });
-            } else {
-                res.status(404).json({ success: false, message: "User not found" });
-            }
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).json({ success: false, message: "Server error" });
-        });
+    // User.findById(userId)
+    //     .exec()
+    //     .then((result) => {
+    //         if (result) {
+    //             res.json({ success: true, data: result });
+    //         } else {
+    //             res.status(404).json({ success: false, message: "User not found" });
+    //         }
+    //     })
+    //     .catch((err) => {
+    //         console.error(err);
+    //         res.status(500).json({ success: false, message: "Server error" });
+    //     });
 });
- 
+
 router.get('/success', async (req, res) => {
     try {
         const users = await User.find({});
@@ -79,6 +86,8 @@ router.get('/success', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+
 router.get("/api/getByuserid/:userId", async (req, res) => {
     const userId = req.params.userId;
  
@@ -90,6 +99,7 @@ router.get("/api/getByuserid/:userId", async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 // router.get("/api/getByuserid",(req,res)=>{
 //     const userId = req.params.userId;
 //     User.findOne(userId,(err,data)=>{
@@ -100,6 +110,15 @@ router.get("/api/getByuserid/:userId", async (req, res) => {
 //             res.send(data)
 //         }
 //     })
- 
+
 // })
-module.exports = router;
+
+module.exports = router;
+
+
+
+
+
+
+
+
